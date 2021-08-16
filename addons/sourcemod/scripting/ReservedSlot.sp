@@ -4,7 +4,7 @@
 
 #undef REQUIRE_PLUGIN
 #include <AFKManager>
-#include <GFLClanru>
+#tryinclude <GFLClanru>
 #tryinclude <entWatch>
 #define REQUIRE_PLUGIN
 
@@ -91,6 +91,7 @@ public EConnect OnClientPreConnectEx(const char[] sName, char sPassword[255], co
 			return k_OnClientPreConnectEx_Accept;
 	}
 
+#if defined _GFLClanru_Included
 	if(g_Plugin_GFLClanru)
 	{
 		DataPack pack = new DataPack();
@@ -101,6 +102,7 @@ public EConnect OnClientPreConnectEx(const char[] sName, char sPassword[255], co
 		AsyncHasSteamIDReservedSlot(sSteam32ID, AsyncHasSteamIDReservedSlotCallback, pack);
 		return k_OnClientPreConnectEx_Async;
 	}
+#endif
 
 	// Let the engine handle the rest.
 	return k_OnClientPreConnectEx_Accept;
