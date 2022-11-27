@@ -22,7 +22,7 @@ public Plugin myinfo =
 	name = "Reserved Slot",
 	author = "BotoX",
 	description = "Kicks someone to make space for a connecting donator.",
-	version = "1.0",
+	version = "1.0.0",
 	url = ""
 };
 
