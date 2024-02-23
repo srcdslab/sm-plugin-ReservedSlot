@@ -159,22 +159,17 @@ stock bool KickValidClient(const char[] sName, const char[] sSteam32ID, AdminId 
 
 	for(int client = 1; client <= MaxClients; client++)
 	{
-		if(client <= 0 || client > MaxClients || !IsClientInGame(client) || IsFakeClient(client))
+		if(!IsClientInGame(client) || IsFakeClient(client))
 			continue;
 
 		int flags = GetUserFlagBits(client);
 
+		if(!IsClientInGame(client) || IsFakeClient(client) || flags & ADMFLAG_ROOT)
+			continue;
+
 		//  Event is active, don't kick Event Managers
-		if(g_Plugin_Events && g_cvEventEnabled.IntValue == 1)
-		{
-			if(!IsClientInGame(client) || IsFakeClient(client) || flags & ADMFLAG_ROOT || flags & ADMFLAG_CONVARS)
-				continue;
-		}
-		else
-		{
-			if(!IsClientInGame(client) || IsFakeClient(client) || flags & ADMFLAG_ROOT)
-				continue;
-		}
+		if(g_Plugin_Events && g_cvEventEnabled.IntValue == 1 && flags & ADMFLAG_CONVARS)
+			continue;
 
 		int Donator = g_Client_Reservation[client];
 		int ConnectionTime = RoundToNearest(GetClientTime(client));
@@ -248,5 +243,5 @@ stock bool KickValidClient(const char[] sName, const char[] sSteam32ID, AdminId 
 
 stock void ExecuteKickValidClient(int client, const char[] sName, const char[] sSteam32ID, AdminId admin, int Immunity)
 {
-	KickClientEx(client, "Kicked for reserved slot. (%s joined)", sName);
+	KickClientEx(client, "Kicked for reserved slot. (%s joined).", sName);
 }
