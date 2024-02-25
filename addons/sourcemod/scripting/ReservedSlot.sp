@@ -14,15 +14,18 @@
 bool g_Plugin_AFKManager;
 bool g_Plugin_GFLClanru;
 bool g_Plugin_entWatch;
+bool g_Plugin_Events;
+
+ConVar g_cvEventEnabled;
 
 int g_Client_Reservation[MAXPLAYERS + 1] = {0, ...};
 
 public Plugin myinfo =
 {
 	name = "Reserved Slot",
-	author = "BotoX",
-	description = "Kicks someone to make space for a connecting donator.",
-	version = "1.0.0",
+	author = "BotoX, .Rushaway",
+	description = "Provides Extended reserved slots",
+	version = "1.2.1",
 	url = ""
 };
 
@@ -40,12 +43,24 @@ public void OnAllPluginsLoaded()
 {
 	g_Plugin_AFKManager = LibraryExists("AFKManager");
 	g_Plugin_GFLClanru = LibraryExists("GFLClanru");
-	g_Plugin_entWatch = LibraryExists("entWatch");
+	g_Plugin_entWatch = LibraryExists("EntWatch");
+	g_Plugin_Events = LibraryExists("Events");
 
-	LogMessage("ReservedSlots capabilities:\nAFKManager: %s\nGFLClanru: %s\nentWatch: %s",
+	LogMessage("ReservedSlots capabilities:\nAFKManager: %s \nGFLClanru: %s \nEntWatch: %s \nEvents: %s",
 		(g_Plugin_AFKManager ? "loaded" : "not loaded"),
 		(g_Plugin_GFLClanru ? "loaded" : "not loaded"),
-		(g_Plugin_entWatch ? "loaded" : "not loaded"));
+		(g_Plugin_entWatch ? "loaded" : "not loaded"),
+		(g_Plugin_Events ? "loaded" : "not loaded"));
+}
+
+public void OnConfigsExecuted()
+{
+	if (g_Plugin_Events)
+	{
+		g_cvEventEnabled = FindConVar("sm_events_enable");
+		if (g_cvEventEnabled == null)
+			g_Plugin_Events = false;
+	}
 }
 
 public void OnClientPostAdminCheck(int client)
@@ -84,7 +99,7 @@ public EConnect OnClientPreConnectEx(const char[] sName, char sPassword[255], co
 
 		if(!KickValidClient(sName, sSteam32ID, admin, Immunity))
 		{
-			Format(sRejectReason, sizeof(sRejectReason), "No reserved slot available, sorry.");
+			Format(sRejectReason, sizeof(sRejectReason), "No reserved slot available yet, sorry.");
 			return k_OnClientPreConnectEx_Reject;
 		}
 		else
@@ -147,23 +162,29 @@ stock bool KickValidClient(const char[] sName, const char[] sSteam32ID, AdminId 
 		if(!IsClientInGame(client) || IsFakeClient(client))
 			continue;
 
+		int flags = GetUserFlagBits(client);
+
+		if(!IsClientInGame(client) || IsFakeClient(client) || flags & ADMFLAG_ROOT)
+			continue;
+
+		//  Event is active, don't kick Event Managers
+		if(g_Plugin_Events && g_cvEventEnabled.IntValue == 1 && flags & ADMFLAG_CONVARS)
+			continue;
+
 		int Donator = g_Client_Reservation[client];
 		int ConnectionTime = RoundToNearest(GetClientTime(client));
-
 		int IdleTime;
+
 		if(g_Plugin_AFKManager)
 			IdleTime = GetClientIdleTime(client);
 		else // Fall back to highest connection time.
 			IdleTime = ConnectionTime;
 
-/*
-#if defined _entWatch_include
+#if defined _EntWatch_include
 		bool HasItem = false;
 		if(g_Plugin_entWatch)
-			HasItem = entWatch_HasSpecialItem(client);
+			HasItem = EntWatch_HasSpecialItem(client);
 #endif
-*/
-
 		/* Spectators
 		 * Sort by idle time and also kick donators if IdleTime > 30
 		 */
@@ -222,5 +243,5 @@ stock bool KickValidClient(const char[] sName, const char[] sSteam32ID, AdminId 
 
 stock void ExecuteKickValidClient(int client, const char[] sName, const char[] sSteam32ID, AdminId admin, int Immunity)
 {
-	KickClientEx(client, "Kicked for reserved slot (%s joined).", sName);
+	KickClientEx(client, "Kicked for reserved slot. (%s joined).", sName);
 }
