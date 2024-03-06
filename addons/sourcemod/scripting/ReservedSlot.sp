@@ -25,7 +25,7 @@ public Plugin myinfo =
 	name = "Reserved Slot",
 	author = "BotoX, .Rushaway",
 	description = "Provides Extended reserved slots",
-	version = "1.2.1",
+	version = "1.2.2",
 	url = ""
 };
 
@@ -156,6 +156,9 @@ stock bool KickValidClient(const char[] sName, const char[] sSteam32ID, AdminId 
 {
 	int HighestValue[4] = {0, ...};
 	int HighestValueClient[4] = {0, ...};
+	
+	bool bAFKManager_Native = GetFeatureStatus(FeatureType_Native, "GetClientIdleTime") == FeatureStatus_Available;
+	bool bEntWatch_Native = GetFeatureStatus(FeatureType_Native, "EntWatch_HasSpecialItem") == FeatureStatus_Available;
 
 	for(int client = 1; client <= MaxClients; client++)
 	{
@@ -175,14 +178,14 @@ stock bool KickValidClient(const char[] sName, const char[] sSteam32ID, AdminId 
 		int ConnectionTime = RoundToNearest(GetClientTime(client));
 		int IdleTime;
 
-		if(g_Plugin_AFKManager)
+		if(g_Plugin_AFKManager && bAFKManager_Native)
 			IdleTime = GetClientIdleTime(client);
 		else // Fall back to highest connection time.
 			IdleTime = ConnectionTime;
 
 #if defined _EntWatch_include
 		bool HasItem = false;
-		if(g_Plugin_entWatch)
+		if(g_Plugin_entWatch && bEntWatch_Native)
 			HasItem = EntWatch_HasSpecialItem(client);
 #endif
 		/* Spectators
