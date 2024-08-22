@@ -5,7 +5,7 @@
 #undef REQUIRE_PLUGIN
 #include <AFKManager>
 #tryinclude <GFLClanru>
-#tryinclude <entWatch>
+#tryinclude <EntWatch>
 #define REQUIRE_PLUGIN
 
 #pragma semicolon 1
@@ -25,7 +25,7 @@ public Plugin myinfo =
 	name = "Reserved Slot",
 	author = "BotoX, .Rushaway",
 	description = "Provides Extended reserved slots",
-	version = "1.2.2",
+	version = "1.2.3",
 	url = ""
 };
 
@@ -162,18 +162,19 @@ stock bool KickValidClient(const char[] sName, const char[] sSteam32ID, AdminId 
 
 	for(int client = 1; client <= MaxClients; client++)
 	{
-		if(!IsClientInGame(client) || IsFakeClient(client))
+		if(!IsClientInGame(client) || IsFakeClient(client) || IsClientSourceTV(client))
 			continue;
 
 		int flags = GetUserFlagBits(client);
 
-		if(!IsClientInGame(client) || IsFakeClient(client) || flags & ADMFLAG_ROOT)
+		if(flags & ADMFLAG_ROOT)
 			continue;
 
 		//  Event is active, don't kick Event Managers
 		if(g_Plugin_Events && g_cvEventEnabled.IntValue == 1 && flags & ADMFLAG_CONVARS)
 			continue;
 
+		int iTeam = GetClientTeam(client);
 		int Donator = g_Client_Reservation[client];
 		int ConnectionTime = RoundToNearest(GetClientTime(client));
 		int IdleTime;
@@ -191,7 +192,7 @@ stock bool KickValidClient(const char[] sName, const char[] sSteam32ID, AdminId 
 		/* Spectators
 		 * Sort by idle time and also kick donators if IdleTime > 30
 		 */
-		if(GetClientTeam(client) <= CS_TEAM_SPECTATOR)
+		if(iTeam <= CS_TEAM_SPECTATOR)
 		{
 			if(!Donator || IdleTime > 30)
 			{
@@ -207,7 +208,7 @@ stock bool KickValidClient(const char[] sName, const char[] sSteam32ID, AdminId 
 		/* Dead non-donator with IdleTime > 30
 		 * Sort by idle time and don't kick donators.
 		 */
-		if(!Donator && GetClientTeam(client) > CS_TEAM_SPECTATOR && !IsPlayerAlive(client))
+		if(!Donator && iTeam > CS_TEAM_SPECTATOR && !IsPlayerAlive(client))
 		{
 			if(IdleTime > 30 && IdleTime > HighestValue[1])
 			{
