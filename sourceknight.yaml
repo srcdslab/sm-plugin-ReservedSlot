@@ -14,8 +14,8 @@ project:
       type: git
       repo: https://github.com/srcdslab/sm-ext-connect
       unpack:
-      - source: /addons
-        dest: /addons
+      - source: /connect.inc
+        dest: /addons/sourcemod/scripting/include/connect.inc
 
     - name: AFKManager
       type: git
