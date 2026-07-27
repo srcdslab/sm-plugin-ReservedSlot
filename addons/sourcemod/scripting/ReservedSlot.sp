@@ -23,7 +23,7 @@ public Plugin myinfo =
 	name = "Reserved Slot",
 	author = "BotoX, .Rushaway",
 	description = "Provides extended reserved slots",
-	version = "1.2.4",
+	version = "1.3.0",
 	url = ""
 };
 
@@ -84,13 +84,10 @@ public bool OnClientPreConnectEx(const char[] sName, char sPassword[255], const 
 		return true;
 
 	AdminId admin = FindAdminByIdentity(AUTHMETHOD_STEAM, sSteam32ID);
-	int Immunity = 0;
 
 	if(admin != INVALID_ADMIN_ID && GetAdminFlag(admin, Admin_Reservation))
 	{
-		Immunity = GetAdminImmunityLevel(admin);
-
-		if(!KickValidClient(sName, sSteam32ID, admin, Immunity))
+		if(!KickValidClient(sName))
 		{
 			Format(sRejectReason, sizeof(sRejectReason), "No reserved slot available yet, sorry.");
 			return false;
@@ -101,7 +98,7 @@ public bool OnClientPreConnectEx(const char[] sName, char sPassword[255], const 
 	return true;
 }
 
-stock bool KickValidClient(const char[] sName, const char[] sSteam32ID, AdminId admin, int Immunity)
+stock bool KickValidClient(const char[] sName)
 {
 	int HighestValue[4] = {0, ...};
 	int HighestValueClient[4] = {0, ...};
@@ -111,8 +108,19 @@ stock bool KickValidClient(const char[] sName, const char[] sSteam32ID, AdminId 
 
 	for(int client = 1; client <= MaxClients; client++)
 	{
-		if(!IsClientInGame(client) || IsFakeClient(client) || IsClientSourceTV(client))
+		if(!IsClientInGame(client) || IsClientSourceTV(client))
 			continue;
+
+		// Always prioritize kicking bots before real players.
+		if(IsFakeClient(client))
+		{
+			if(!HighestValueClient[0])
+			{
+				HighestValue[0] = 1;
+				HighestValueClient[0] = client;
+			}
+			continue;
+		}
 
 		int flags = GetUserFlagBits(client);
 
@@ -145,10 +153,10 @@ stock bool KickValidClient(const char[] sName, const char[] sSteam32ID, AdminId 
 		{
 			if(!Donator || IdleTime > 30)
 			{
-				if(IdleTime > HighestValue[0])
+				if(IdleTime > HighestValue[1])
 				{
-					HighestValue[0] = IdleTime;
-					HighestValueClient[0] = client;
+					HighestValue[1] = IdleTime;
+					HighestValueClient[1] = client;
 				}
 			}
 		}
@@ -159,10 +167,10 @@ stock bool KickValidClient(const char[] sName, const char[] sSteam32ID, AdminId 
 		 */
 		if(!Donator && iTeam > CS_TEAM_SPECTATOR && !IsPlayerAlive(client))
 		{
-			if(IdleTime > 30 && IdleTime > HighestValue[1])
+			if(IdleTime > 30 && IdleTime > HighestValue[2])
 			{
-				HighestValue[1] = IdleTime;
-				HighestValueClient[1] = client;
+				HighestValue[2] = IdleTime;
+				HighestValueClient[2] = client;
 			}
 		}
 		/* Dead non-donator with IdleTime > 30 */
@@ -172,10 +180,10 @@ stock bool KickValidClient(const char[] sName, const char[] sSteam32ID, AdminId 
 		 *
 		if(!Donator && IsPlayerAlive(client) && !HasItem)
 		{
-			if(IdleTime > 30 && IdleTime > HighestValue[2])
+			if(IdleTime > 30 && IdleTime > HighestValue[3])
 			{
-				HighestValue[2] = IdleTime;
-				HighestValueClient[2] = client;
+				HighestValue[3] = IdleTime;
+				HighestValueClient[3] = client;
 			}
 		}
 		* Alive non-donator with IdleTime > 30 */
@@ -186,7 +194,7 @@ stock bool KickValidClient(const char[] sName, const char[] sSteam32ID, AdminId 
 	{
 		if(HighestValue[i])
 		{
-			ExecuteKickValidClient(HighestValueClient[i], sName, sSteam32ID, admin, Immunity);
+			ExecuteKickValidClient(HighestValueClient[i], sName);
 			return true;
 		}
 	}
@@ -194,7 +202,7 @@ stock bool KickValidClient(const char[] sName, const char[] sSteam32ID, AdminId 
 	return false;
 }
 
-stock void ExecuteKickValidClient(int client, const char[] sName, const char[] sSteam32ID, AdminId admin, int Immunity)
+stock void ExecuteKickValidClient(int client, const char[] sName)
 {
 	KickClientEx(client, "Kicked for reserved slot. (%s joined).", sName);
 }
