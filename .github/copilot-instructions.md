@@ -13,25 +13,24 @@ This repository contains a **SourcePawn plugin for SourceMod** that provides **e
 ## Technical Environment
 
 ### Build System
-- **Primary Build Tool**: SourceKnight (not standard SourceMod compiler)
-- **Configuration**: `sourceknight.yaml` defines dependencies and build targets
-- **Dependencies**: Automatically managed via SourceKnight
-  - SourceMod 1.11.0-git6934
+- **Primary Build Tool**: Native GitHub Actions using the SourcePawn compiler (`spcomp`) via `rumblefrog/setup-sp`
+- **Configuration**: `.github/workflows/ci.yml` defines dependency cloning and build targets
+- **Dependencies**: Cloned directly from their source repositories in CI
+  - SourceMod 1.12.x
   - sm-ext-connect extension
   - AFKManager plugin integration
   - EntWatch plugin integration
 
 ### Compilation
 ```bash
-# Build using SourceKnight (CI/CD uses maxime1907/action-sourceknight@v1)
-sourceknight build
+# Build using spcomp directly (CI/CD uses rumblefrog/setup-sp@v1.3.1)
+spcomp -i include -o ../plugins/ReservedSlot.smx ReservedSlot.sp
 ```
 
 ### Project Structure
 ```
 addons/sourcemod/scripting/
 ├── ReservedSlot.sp          # Main plugin file
-sourceknight.yaml            # Build configuration and dependencies
 .github/workflows/ci.yml     # Automated CI/CD pipeline
 ```
 
@@ -89,14 +88,14 @@ sourceknight.yaml            # Build configuration and dependencies
 ## Build and Testing
 
 ### Local Development
-1. Install SourceKnight build system
-2. Run `sourceknight build` to compile
+1. Install the SourcePawn compiler (`spcomp`) matching SourceMod 1.12.x
+2. Compile with `spcomp -i include -o ReservedSlot.smx ReservedSlot.sp`
 3. Test on development server with multiple clients
 4. Verify reservation logic with different admin levels
 
 ### CI/CD Pipeline
 - Automatically builds on push/PR using GitHub Actions
-- Uses `maxime1907/action-sourceknight@v1` action
+- Uses `rumblefrog/setup-sp@v1.3.1` to install the SourcePawn compiler
 - Creates release artifacts automatically
 - Tags latest builds on main/master branch
 
@@ -110,7 +109,7 @@ sourceknight.yaml            # Build configuration and dependencies
 ## Integration Dependencies
 
 ### Required Dependencies
-- **SourceMod 1.12+** (currently using 1.11.0-git6934)
+- **SourceMod 1.12.x**
 - **CS:GO/CS2** (uses cstrike include)
 - **sm-ext-connect** - For enhanced connection handling
 
@@ -121,12 +120,8 @@ sourceknight.yaml            # Build configuration and dependencies
 
 ### Dependency Management
 ```yaml
-# sourceknight.yaml handles all dependencies automatically
-dependencies:
-  - name: sourcemod
-    type: tar
-    version: 1.11.0-git6934
-    location: https://sm.alliedmods.net/smdrop/1.11/sourcemod-1.11.0-git6934-linux.tar.gz
+# .github/workflows/ci.yml clones dependencies directly from their repos, e.g.:
+git clone --depth=1 https://github.com/srcdslab/sm-plugin-AFKManager.git deps/sm-plugin-AFKManager
 ```
 
 ## Common Development Tasks
