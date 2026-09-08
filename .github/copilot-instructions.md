@@ -54,7 +54,7 @@ addons/sourcemod/scripting/
 
 #### Plugin Integration Points
 - **AFKManager**: Uses `GetClientIdleTime()` native for idle detection
-- **EntWatch**: Checks `EntWatch_HasSpecialItem()` to protect item holders
+- **entWatch-core** (entWatch 4): Checks `EW_ClientHasItem()` to protect item holders
 - **Events Plugin**: Respects event managers during active events
 
 ## Development Guidelines

@@ -23,8 +23,8 @@ jobs:
           cp deps/sm-ext-connect/package/addons/sourcemod/scripting/include/connect.inc addons/sourcemod/scripting/include/connect.inc
           git clone --depth=1 https://github.com/srcdslab/sm-plugin-AFKManager.git deps/sm-plugin-AFKManager
           cp -R deps/sm-plugin-AFKManager/addons/* addons/
-          git clone --depth=1 https://github.com/srcdslab/sm-plugin-EntWatch.git deps/sm-plugin-EntWatch
-          cp -R deps/sm-plugin-EntWatch/addons/* addons/
+          git clone --depth=1 https://github.com/srcdslab/sm-plugin-entwatch-4.git deps/sm-plugin-entwatch-4
+          cp -R deps/sm-plugin-entwatch-4/addons/* addons/
 
       - name: Build sourcemod plugin
         working-directory: addons/sourcemod/scripting
