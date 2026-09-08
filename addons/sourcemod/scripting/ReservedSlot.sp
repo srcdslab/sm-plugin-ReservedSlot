@@ -4,7 +4,7 @@
 
 #undef REQUIRE_PLUGIN
 #include <AFKManager>
-#tryinclude <EntWatch>
+#tryinclude <entWatch_core>
 #define REQUIRE_PLUGIN
 
 #pragma semicolon 1
@@ -23,7 +23,7 @@ public Plugin myinfo =
 	name = "Reserved Slot",
 	author = "BotoX, .Rushaway",
 	description = "Provides extended reserved slots",
-	version = "1.3.0",
+	version = "1.4.0",
 	url = ""
 };
 
@@ -40,7 +40,7 @@ public void OnPluginStart()
 public void OnAllPluginsLoaded()
 {
 	g_Plugin_AFKManager = LibraryExists("AFKManager");
-	g_Plugin_entWatch = LibraryExists("EntWatch");
+	g_Plugin_entWatch = LibraryExists("entWatch-core");
 	g_Plugin_Events = LibraryExists("Events");
 
 	LogMessage("ReservedSlots capabilities:\nAFKManager: %s \nEntWatch: %s \nEvents: %s",
@@ -104,7 +104,7 @@ stock bool KickValidClient(const char[] sName)
 	int HighestValueClient[4] = {0, ...};
 	
 	bool bAFKManager_Native = GetFeatureStatus(FeatureType_Native, "GetClientIdleTime") == FeatureStatus_Available;
-	bool bEntWatch_Native = GetFeatureStatus(FeatureType_Native, "EntWatch_HasSpecialItem") == FeatureStatus_Available;
+	bool bEntWatch_Native = GetFeatureStatus(FeatureType_Native, "EW_ClientHasItem") == FeatureStatus_Available;
 
 	for(int client = 1; client <= MaxClients; client++)
 	{
@@ -141,10 +141,10 @@ stock bool KickValidClient(const char[] sName)
 		else // Fall back to highest connection time.
 			IdleTime = ConnectionTime;
 
-#if defined _EntWatch_include
+#if defined _entWatch_included
 		bool HasItem = false;
 		if(g_Plugin_entWatch && bEntWatch_Native)
-			HasItem = EntWatch_HasSpecialItem(client);
+			HasItem = EW_ClientHasItem(client);
 #endif
 		/* Spectators
 		 * Sort by idle time and also kick donators if IdleTime > 30
